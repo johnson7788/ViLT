@@ -346,6 +346,7 @@ class Block(nn.Module):
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
     ):
+        # transformer的每一层的初始化
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
@@ -484,11 +485,11 @@ class VisionTransformer(nn.Module):
 
         if add_norm_before_transformer:
             self.pre_norm = norm_layer(embed_dim)
-
+        # depth: transformer的层数，eg: 12, drop_path_rate:每层的dropout
         dpr = [
             x.item() for x in torch.linspace(0, drop_path_rate, depth)
         ]
-        # stochastic depth decay rule
+        # 开始构建transformer的每一层，每一层都是一个Block
         self.blocks = nn.ModuleList(
             [
                 Block(

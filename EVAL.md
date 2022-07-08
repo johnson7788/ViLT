@@ -41,10 +41,10 @@ python run.py with data_root=<ARROW_ROOT> num_gpus=<NUM_GPUS> num_nodes=<NUM_NOD
 
 或者你可以简单地使用"<YOUR_WEIGHT_ROOT>/vilt_200k_mlm_itm.ckpt "来评估zero-shot性能。
 
-ex)
+示例：, 注意with关键字不能省略，这是给sacred保存配置的
 python run.py with data_root=/data2/dsets/dataset num_gpus=8 num_nodes=1 per_gpu_batchsize=4 task_finetune_irtr_coco_randaug test_only=True precision=32 load_path="weights/vilt_irtr_coco.ckpt"
 
-output > caution! this will take a lot of time (= run transformer for 5000 x 5000 samples; the returned values are IR R@1, R@5, R@10 and TR R@1, R@5, R@10)
+output > 注意，这将花费很长的时间 (= run transformer for 5000 x 5000 samples; the returned values are IR R@1, R@5, R@10 and TR R@1, R@5, R@10)
 (tensor(0.4299), tensor(0.7284), tensor(0.8307), tensor(0.6162), tensor(0.8632), tensor(0.9270)) 0
 Testing: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 782/782 [34:58:50<00:00, 161.04s/it]
 --------------------------------------------------------------------------------

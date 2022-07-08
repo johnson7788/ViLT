@@ -375,7 +375,7 @@ class Block(nn.Module):
 
 
 class PatchEmbed(nn.Module):
-    """ Image to Patch Embedding"""
+    """ 图片到碎片的嵌入 to Patch Embedding"""
 
     def __init__(
         self,
@@ -386,9 +386,9 @@ class PatchEmbed(nn.Module):
         no_patch_embed_bias=False,
     ):
         super().__init__()
-        img_size = to_2tuple(img_size)
+        img_size = to_2tuple(img_size)  # 转换成tuple格式, 如果是int, 则转换成(int, int)
         patch_size = to_2tuple(patch_size)
-        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0])
+        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0])  # 计算共产生多少碎片
         self.img_size = img_size
         self.patch_size = patch_size
         self.num_patches = num_patches
@@ -438,25 +438,26 @@ class VisionTransformer(nn.Module):
     ):
         """
         Args:
-            img_size (int, tuple): input image size
-            patch_size (int, tuple): patch size
+            img_size (int, tuple): input image size, eg:384
+            patch_size (int, tuple): patch size, eg:32
             in_chans (int): number of input channels
             num_classes (int): number of classes for classification head
             embed_dim (int): embedding dimension
-            depth (int): depth of transformer
-            num_heads (int): number of attention heads
-            mlp_ratio (int): ratio of mlp hidden dim to embedding dim
-            qkv_bias (bool): enable bias for qkv if True
+            depth (int): depth of transformer， eg: 12
+            num_heads (int): number of attention heads eg: 12
+            mlp_ratio (int): ratio of mlp hidden dim to embedding dim, eg:4.0
+            qkv_bias (bool): enable bias for qkv if True, 是否使用qkv的bias
             qk_scale (float): override default qk scale of head_dim ** -0.5 if set
             representation_size (Optional[int]): enable and set representation layer (pre-logits) to this value if set
             drop_rate (float): dropout rate
             attn_drop_rate (float): attention dropout rate
             drop_path_rate (float): stochastic depth rate
             hybrid_backbone (nn.Module): CNN backbone to use in-place of PatchEmbed module
-            norm_layer: (nn.Module): normalization layer
+            norm_layer: (nn.Module): normalization layer, default: None, 如果不给定，则使用nn.LayerNorm
+            add_norm_before_transformer： 在哪个位置添加normalization层
         """
         super().__init__()
-        drop_rate = drop_rate if config is None else config["drop_rate"]
+        drop_rate = drop_rate if config is None else config["drop_rate"] #eg: 0.1
 
         self.num_classes = num_classes
         self.num_features = (
@@ -464,18 +465,20 @@ class VisionTransformer(nn.Module):
         ) = embed_dim  # num_features for consistency with other models
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
         self.add_norm_before_transformer = add_norm_before_transformer
-
+        # 初始化碎片嵌入
         self.patch_embed = PatchEmbed(
             img_size=img_size,
             patch_size=patch_size,
             in_chans=in_chans,
             embed_dim=embed_dim,
         )
+        # 碎片的数量
         num_patches = self.patch_embed.num_patches
 
         self.patch_size = patch_size
         self.patch_dim = img_size // patch_size
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        # 碎片位置编码
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
         self.pos_drop = nn.Dropout(p=drop_rate)
 
@@ -484,7 +487,8 @@ class VisionTransformer(nn.Module):
 
         dpr = [
             x.item() for x in torch.linspace(0, drop_path_rate, depth)
-        ]  # stochastic depth decay rule
+        ]
+        # stochastic depth decay rule
         self.blocks = nn.ModuleList(
             [
                 Block(
@@ -604,8 +608,8 @@ class VisionTransformer(nn.Module):
             or max_image_len is None
             or not isinstance(max_image_len, int)
         ):
-            # suppose aug is 800 x 1333, then, maximum effective res is 800 x 1333 (if one side gets bigger, the other will be constrained and be shrinked)
-            # (800 // self.patch_size) * (1333 // self.patch_size) is the maximum number of patches that single image can get.
+            # 假设图片的平均尺寸是 800 x 1333, then, 即分辨率是： 800 x 1333 (如果1个边是比较大的，那么另一个是比较小的)
+            # 计算获取的patches块的数量: (800 // self.patch_size) * (1333 // self.patch_size) is the maximum number of patches that single image can get.
             # if self.patch_size = 32, 25 * 41 = 1025
             # if res is 384 x 640, 12 * 20 = 240
             eff = x_h * x_w
@@ -885,10 +889,26 @@ def checkpoint_filter_fn(state_dict, model):
 
 
 def _create_vision_transformer(variant, pretrained=False, distilled=False, **kwargs):
-    default_cfg = default_cfgs[variant]
-    default_num_classes = default_cfg["num_classes"]
-    default_img_size = default_cfg["input_size"][-1]
+    """
 
+    :param variant: 'vit_base_patch32_384'
+    :type variant:
+    :param pretrained: bool : 是否预训练
+    :type pretrained:
+    :param distilled: 是否是蒸馏的模型
+    :type distilled: bool
+    :param kwargs:
+    :type kwargs:
+    :return:
+    :rtype:
+    """
+    # 加载配置
+    default_cfg = default_cfgs[variant]
+    # eg: 1000, 默认是多少分类的
+    default_num_classes = default_cfg["num_classes"]
+    # input_size: (3, 384, 384), 图片的尺寸
+    default_img_size = default_cfg["input_size"][-1]
+    # 加载自定义的配置
     num_classes = kwargs.pop("num_classes", default_num_classes)
     img_size = kwargs.pop("img_size", default_img_size)
     repr_size = kwargs.pop("representation_size", None)
@@ -899,6 +919,7 @@ def _create_vision_transformer(variant, pretrained=False, distilled=False, **kwa
         repr_size = None
 
     model_cls = DistilledVisionTransformer if distilled else VisionTransformer
+    # 初始化VisionTransformer
     model = model_cls(
         img_size=img_size,
         num_classes=num_classes,

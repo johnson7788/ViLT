@@ -11,9 +11,14 @@ from vilt.datamodules.multitask_datamodule import MTDataModule
 def main(_config):
     _config = copy.deepcopy(_config)
     pl.seed_everything(_config["seed"])
-
-    dm = MTDataModule(_config, dist=True)
-
+    if _config['num_gpus'] == 1 and _config['num_nodes'] == 1:
+        # 是否是分布式训练
+        dist = False
+    else:
+        dist = True
+    # 数据集初始化
+    dm = MTDataModule(_config, dist=dist)
+    #模型初始化
     model = ViLTransformerSS(_config)
     exp_name = f'{_config["exp_name"]}'
 

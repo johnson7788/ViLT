@@ -10,12 +10,16 @@ from . import _datamodules
 
 class MTDataModule(LightningDataModule):
     def __init__(self, _config, dist=False):
-        datamodule_keys = _config["datasets"]
-        assert len(datamodule_keys) > 0
+        """
+        dist: 是否是分布式训练
+        """
+        datamodule_keys = _config["datasets"] # 数据集列表['coco']
+        assert len(datamodule_keys) > 0, f"数据集数量太少了，必须大于1个"
 
         super().__init__()
 
         self.dm_keys = datamodule_keys
+        # 使用_datamodules，给每个数据集创建一个对象
         self.dm_dicts = {key: _datamodules[key](_config) for key in datamodule_keys}
         self.dms = [v for k, v in self.dm_dicts.items()]
 

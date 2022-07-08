@@ -1,4 +1,4 @@
-# Train New Models
+# 训练一个新的模型
 
 ## Pretraining
 ```bash

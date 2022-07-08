@@ -1,5 +1,5 @@
-# Evaluation
-The results will vary a bit since we do a batched-inference, which yields padded image batch that would be inconsistently embedded while performing linear image patch projection.
+# 推理
+结果会有一些不同，因为我们做的是分批推理，产生的是填充的图像批，在进行线性图像补丁投影时，会有不一致的嵌入。
 
 ## Evaluate VQAv2
 ```bash
@@ -39,7 +39,7 @@ INFO - ViLT - Completed after 0:01:31
 ```bash
 python run.py with data_root=<ARROW_ROOT> num_gpus=<NUM_GPUS> num_nodes=<NUM_NODES> per_gpu_batchsize=<BS_FITS_YOUR_GPU> task_finetune_irtr_coco_randaug test_only=True precision=32 load_path="<YOUR_WEIGHT_ROOT>/vilt_irtr_coco.ckpt"
 
-or you can evaluate zero-shot performance just simply using "<YOUR_WEIGHT_ROOT>/vilt_200k_mlm_itm.ckpt" instead.
+或者你可以简单地使用"<YOUR_WEIGHT_ROOT>/vilt_200k_mlm_itm.ckpt "来评估zero-shot性能。
 
 ex)
 python run.py with data_root=/data2/dsets/dataset num_gpus=8 num_nodes=1 per_gpu_batchsize=4 task_finetune_irtr_coco_randaug test_only=True precision=32 load_path="weights/vilt_irtr_coco.ckpt"

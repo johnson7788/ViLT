@@ -1,16 +1,16 @@
 # Dataset Preparation
-We utilize seven datsets: Google Conceptual Captions (GCC), Stony Brook University Captions (SBU), Visual Genome (VG), COCO Captions (COCO), Flickr 30K Captions (F30K), Visual Question Answering v2 (VQAv2), and Natural Language for Visual Reasoning 2 (NLVR2).
+我们利用7个数据集: Google Conceptual Captions (GCC), Stony Brook University Captions (SBU), Visual Genome (VG), COCO Captions (COCO), Flickr 30K Captions (F30K), Visual Question Answering v2 (VQAv2), and Natural Language for Visual Reasoning 2 (NLVR2).
 
-We do not distribute datasets because of the license issue.
-Please download the datasets by yourself.
-We use `pyarrow` to serialize the datasets, conversion scripts are located in `vilt/utils/write_*.py`.
-Please organize the datasets as follows and run `make_arrow` functions to convert the dataset to pyarrow binary file.
+由于许可证问题，我们不分发数据集。
+请自行下载这些数据集。
+我们使用`pyarrow`来序列化数据集，转换脚本位于`vilt/utils/write_*.py`中。
+请按以下方式组织数据集，并运行`make_arrow`函数，将数据集转换为pyarrow二进制文件。
 
 ## GCC
 https://ai.google.com/research/ConceptualCaptions/download
 
-GCC provides tuples of image url and caption, note that a quite portion of the urls are unaccessible now.
-Write your own download script and organize the dataset as following structure.
+GCC提供了图片网址和字幕的元祖，注意有相当一部分网址现在无法访问。
+编写你自己的下载脚本并按以下结构组织数据集。
 
     root
     ├── images_train            
@@ -38,8 +38,8 @@ make_arrow(root, arrows_root)
 ## SBU
 http://www.cs.virginia.edu/~vicente/sbucaptions/
 
-Similar to GCC, SBU also provides tuples of image url and caption, and also a quite portion of the urls are unaccessible now.
-Write your own download script and organize the dataset as following structure.
+与GCC类似，SBU也提供了图片网址和字幕的元祖，而且现在有相当一部分网址是无法访问的。
+编写你自己的下载脚本，并按以下结构组织数据集。
 
     root
     ├── images_train            

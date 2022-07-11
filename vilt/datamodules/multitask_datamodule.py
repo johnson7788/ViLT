@@ -34,9 +34,9 @@ class MTDataModule(LightningDataModule):
             dm.prepare_data()
 
     def setup(self, stage):
+        # stage： 'test' 测试集，'val' 验证集，'train' 训练集
         for dm in self.dms:
             dm.setup(stage)
-
         self.train_dataset = ConcatDataset([dm.train_dataset for dm in self.dms])
         self.val_dataset = ConcatDataset([dm.val_dataset for dm in self.dms])
         self.test_dataset = ConcatDataset([dm.test_dataset for dm in self.dms])

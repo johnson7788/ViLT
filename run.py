@@ -20,8 +20,8 @@ def main(_config):
     dm = MTDataModule(_config, dist=dist)
     #模型初始化
     model = ViLTransformerSS(_config)
-    exp_name = f'{_config["exp_name"]}'
-
+    exp_name = f'{_config["exp_name"]}'  #实验的名称: 'finetune_irtr_coco_randaug'
+    # 日志位置：_config["log_dir"]：result/
     os.makedirs(_config["log_dir"], exist_ok=True)
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=1,

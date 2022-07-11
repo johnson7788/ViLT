@@ -40,7 +40,7 @@ class ViLTransformerSS(pl.LightningModule):
 
         self.pooler = heads.Pooler(config["hidden_size"])
         self.pooler.apply(objectives.init_weights)
-
+        # 根据损失的类型，添加不同的头
         if config["loss_names"]["mlm"] > 0:
             self.mlm_score = heads.MLMHead(bert_config)
             self.mlm_score.apply(objectives.init_weights)

@@ -122,10 +122,10 @@ class ViLTransformerSS(pl.LightningModule):
             imgkey = "image"
 
         do_mlm = "_mlm" if mask_text else ""
-        text_ids = batch[f"text_ids{do_mlm}"]
-        text_labels = batch[f"text_labels{do_mlm}"]
-        text_masks = batch[f"text_masks"]
-        text_embeds = self.text_embeddings(text_ids)
+        text_ids = batch[f"text_ids{do_mlm}"]   #【64，40】
+        text_labels = batch[f"text_labels{do_mlm}"]#【64，40】
+        text_masks = batch[f"text_masks"]  #【64，40】
+        text_embeds = self.text_embeddings(text_ids)  #【64，40，768】
 
         if image_embeds is None and image_masks is None:
             img = batch[imgkey][0]
@@ -166,7 +166,7 @@ class ViLTransformerSS(pl.LightningModule):
             x[:, : text_embeds.shape[1]],
             x[:, text_embeds.shape[1] :],
         )
-        cls_feats = self.pooler(x)
+        cls_feats = self.pooler(x)   #x: [64,233,768] [bs,text+img length, dimension], cls_feats:[64,768]
 
         ret = {
             "text_feats": text_feats,
@@ -236,7 +236,7 @@ class ViLTransformerSS(pl.LightningModule):
         vilt_utils.set_task(self)
         output = self(batch)
         ret = dict()
-
+        # 更新output到ret
         if self.hparams.config["loss_names"]["vqa"] > 0:
             ret.update(objectives.vqa_test_step(self, batch, output))
 

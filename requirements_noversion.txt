@@ -8,4 +8,4 @@ einops
 pyarrow
 sacred
 pandas
-git+https://github.com/rwightman/pytorch-image-models.git
+timm

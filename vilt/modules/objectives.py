@@ -400,7 +400,7 @@ def compute_irtr(pl_module, batch):
     is_training_phase = pl_module.training
 
     _bs, _c, _h, _w = batch["image"][0].shape
-    false_len = pl_module.hparams.config["draw_false_text"]
+    false_len = pl_module.hparams.config["draw_false_text"]  #false_len:负样本的个数
     text_ids = torch.stack(
         [batch[f"false_text_{i}_ids"] for i in range(false_len)], dim=1
     )
@@ -424,10 +424,10 @@ def compute_irtr(pl_module, batch):
             "text_labels": rearrange(text_labels, "bs fs tl -> (bs fs) tl"),
         }
     )
-    score = pl_module.rank_output(infer["cls_feats"])[:, 0]
-    score = rearrange(score, "(bs fs) -> bs fs", bs=_bs, fs=false_len + 1)
-    answer = torch.zeros(_bs).to(score).long()
-    irtr_loss = F.cross_entropy(score, answer)
+    score = pl_module.rank_output(infer["cls_feats"])[:, 0]  #score: [64],即[bs]
+    score = rearrange(score, "(bs fs) -> bs fs", bs=_bs, fs=false_len + 1)  # 维度变成[bs, fs] -->[4,16]
+    answer = torch.zeros(_bs).to(score).long()   #真正的答案是:[0,0,0,0], 第一个样本都是正样本，其它的都是负样本
+    irtr_loss = F.cross_entropy(score, answer)   # 计算预测值与真实值label的loss
 
     ret = {
         "irtr_loss": irtr_loss,
@@ -474,7 +474,7 @@ def compute_irtr_recall(pl_module):
     )
 
     text_preload = list()
-    for _b in tqdm.tqdm(text_loader, desc="text prefetch loop"):
+    for _b in tqdm.tqdm(text_loader, desc="获取数据集中的文本内容"):
         text_preload.append(
             {
                 "text_ids": _b["text_ids"].to(pl_module.device),
@@ -490,7 +490,7 @@ def compute_irtr_recall(pl_module):
     tiids = torch.tensor(tiids)
 
     image_preload = list()
-    for _b in tqdm.tqdm(image_loader, desc="image prefetch loop"):
+    for _b in tqdm.tqdm(image_loader, desc="获取数据集中的所有候选图片内容"):
         (ie, im, _, _) = pl_module.transformer.visual_embed(
             _b["image"][0].to(pl_module.device),
             max_image_len=pl_module.hparams.config["max_image_len"],
@@ -500,14 +500,14 @@ def compute_irtr_recall(pl_module):
 
     rank_scores = list()
     rank_iids = list()
-
-    for img_batch in tqdm.tqdm(image_preload, desc="rank loop"):
-        _ie, _im, _iid = img_batch
+    # image_preload：每个预先生成好的的向量，候选向量
+    for img_batch in tqdm.tqdm(image_preload, desc="逐个候选图片和每个文本计算排名"):
+        _ie, _im, _iid = img_batch  #_ie: [1,193,768], _im: [1,193], 索引idx
         _, l, c = _ie.shape
 
         img_batch_score = list()
         for txt_batch in text_preload:
-            fblen = len(txt_batch["text_ids"])
+            fblen = len(txt_batch["text_ids"]) #fblen:64
             ie = _ie.expand(fblen, l, c)
             im = _im.expand(fblen, l)
 

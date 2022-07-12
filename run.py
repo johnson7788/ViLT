@@ -61,7 +61,7 @@ def main(_config):
         max_steps=max_steps,
         callbacks=callbacks,
         logger=logger,
-        prepare_data_per_node=False,
+        # prepare_data_per_node=False,  # 新的pytorch_lightning的版本，不需要这个参数
         replace_sampler_ddp=False,
         accumulate_grad_batches=grad_steps,
         log_every_n_steps=10,
